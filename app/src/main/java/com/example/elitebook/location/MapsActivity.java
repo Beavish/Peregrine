@@ -11,13 +11,15 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.icu.text.IDNA;
 import android.location.Location;
-import android.location.LocationListener;
+import com.google.android.gms.location.LocationListener;
 import android.nfc.Tag;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -29,6 +31,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApi;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -41,12 +45,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.Random;
 
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+        android.location.LocationListener,com.google.android.gms.location.LocationListener {
 
     private GoogleMap mMap;
     private static final int MY_PERMISSION_REQUEST_CODE = 1234;
@@ -58,6 +64,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static int UPDATE_INTERVAL = 5000;
     private static int FASTEST_INTERVAL = 3000;
     private static int DISPLACEMENT = 10;
+    private static final String title = "Peregrine";
+    private static final String message = "Look out for the G.P.O";
+    private NotificationHelper mNotificationHelper;
     private static final String TAG = "GoogleApiClient";
     DatabaseReference ref;
     GeoFire geoFire;
@@ -74,9 +83,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         ref = FirebaseDatabase.getInstance().getReference("MyLocation");
         geoFire = new GeoFire(ref);
+        mNotificationHelper = new NotificationHelper(this);
+
 
 
         setUpLocation();
+        Log.d(TAG,"SetUpLocation called");
     }
 
     @Override
@@ -86,8 +98,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     if (checkPlayServices()) {
                         buildGoogleApiClient();
+                        Log.d(TAG,"buildGoogleApiClient called");
                         createLocationRequest();
+                        Log.d(TAG,"createLocationRequest called");
                         displayLocation();
+                        Log.d(TAG,"Display Location  called");
 
 
                     }
@@ -105,11 +120,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }, MY_PERMISSION_REQUEST_CODE);
 
         } else {
-            if (checkPlayServices()) {
+            if (checkPlayServices())
+            {
                 buildGoogleApiClient();
                 createLocationRequest();
                 displayLocation();
-
+                Log.d(TAG,"build Google Api Client , Create Location Request , Display Location called");
 
             }
         }
@@ -118,10 +134,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void displayLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-
+            {
+                return;
+            }
         }
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
         if (mLastLocation != null) {
             double latitude = mLastLocation.getLatitude();
             double longitude = mLastLocation.getLongitude();
@@ -131,8 +149,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
             Log.d(TAG, "your location" + latitude + longitude);
-        } else {
-            Log.d(TAG, "Can't get your location ");
+        }
+
+
+        else {
+            Log.d(TAG, "Can't get your location AKA NULL");
         }
 
     }
@@ -151,6 +172,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+        mGoogleApiClient.connect();
 
     }
 
@@ -190,16 +212,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .strokeWidth(5.0f)
         );
 
-        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(GPO.latitude,GPO.longitude),1f);
+        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(GPO.latitude,GPO.longitude),10f);
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
-                sendNotification(TAG,String.format("%s You have Entered the G.P.O Area, open the camera to learn more",key));
+             sendNotification(TAG,String.format("%s You have Entered the G.P.O Area, open the camera to learn more",key));
+            //    sendOnChannel(title,message);
+            //    Log.d(TAG,"Notifications Firing ");
+             //   Notification.Builder builder =mNotificationHelper.getChannel1Notification(title,message);
+               // mNotificationHelper.getmManger().notify(new Random().nextInt(),builder.build());
+
+                Context context = getApplicationContext();
+                CharSequence text = "Hello toast!";
+                int duration = Toast.LENGTH_SHORT;
+
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+
             }
 
             @Override
-            public void onKeyExited(String key) {
-                sendNotification(TAG,String.format("%s Leaving the G.P.O Area we hope you were enlightened.",key));
+            public void onKeyExited(String key ) {
+             sendNotification(TAG,String.format("%s Leaving the G.P.O Area we hope you were enlightened.",key));
 
             }
 
@@ -226,11 +260,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+
+
     private void sendNotification(String title, String content) {
         Notification.Builder builder = new Notification.Builder(this)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle(title)
                 .setContentText(content);
-        @SuppressLint("ServiceCast") NotificationManager manager = (NotificationManager)this.getSystemService(Context.NFC_SERVICE);
+        NotificationManager manager = (NotificationManager)this.getSystemService(Context.NOTIFICATION_SERVICE);
         Intent intent = new Intent(this,MapsActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_IMMUTABLE);
         builder.setContentIntent(contentIntent);
@@ -238,11 +275,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         notification.flags |= Notification.FLAG_AUTO_CANCEL;
         notification.defaults |= Notification.DEFAULT_SOUND;
 
-        manager.notify(new Random().nextInt(),notification);
+        manager.notify(new Random().nextInt(), notification);
+
+
+
     }
 
     @Override
     public void onLocationChanged(Location location) {
+        mLastLocation = location;
+        displayLocation();
 
     }
 
@@ -271,13 +313,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION )!= PackageManager.PERMISSION_GRANTED)
         {
+            return;
 
         }
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest, this);
 
     }
 
     @Override
     public void onConnectionSuspended(int i) {
+        mGoogleApiClient.connect();
 
     }
 
@@ -285,4 +330,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
+
 }
