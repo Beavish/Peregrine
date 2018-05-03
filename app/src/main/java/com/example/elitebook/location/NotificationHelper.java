@@ -19,7 +19,7 @@ public class NotificationHelper extends ContextWrapper{
         super(base);
         createChannels();
     }
-
+    // creating a channel for notifications to flow through
     private void createChannels() {
         NotificationChannel channel1 = new NotificationChannel(Channel,ChannelName, NotificationManager.IMPORTANCE_HIGH);
         channel1.enableLights(true);
@@ -37,7 +37,9 @@ public class NotificationHelper extends ContextWrapper{
 
 
     }
+
     public Notification.Builder getChannel1Notification(String title,String message){
+        // show notification and when its clicked , open the app
         Intent resultIntent = new Intent(this, MapsActivity.class);
         PendingIntent resultPendingIntent = PendingIntent.getActivity(this,1,resultIntent,PendingIntent.FLAG_UPDATE_CURRENT );
         return new Notification.Builder(getApplicationContext(),Channel)
