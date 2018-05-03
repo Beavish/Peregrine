@@ -86,7 +86,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mNotificationHelper = new NotificationHelper(this);
 
 
-
         setUpLocation();
         Log.d(TAG,"SetUpLocation called");
     }
@@ -216,24 +215,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
-             sendNotification(TAG,String.format("%s You have Entered the G.P.O Area, open the camera to learn more",key));
-            //    sendOnChannel(title,message);
-            //    Log.d(TAG,"Notifications Firing ");
-             //   Notification.Builder builder =mNotificationHelper.getChannel1Notification(title,message);
-               // mNotificationHelper.getmManger().notify(new Random().nextInt(),builder.build());
 
-                Context context = getApplicationContext();
-                CharSequence text = "Hello toast!";
-                int duration = Toast.LENGTH_SHORT;
+                Notification.Builder builder = mNotificationHelper.getChannel1Notification(title,message);
+                mNotificationHelper.getmManger().notify(new Random().nextInt(),builder.build());
 
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
+
+
 
             }
 
             @Override
             public void onKeyExited(String key ) {
-             sendNotification(TAG,String.format("%s Leaving the G.P.O Area we hope you were enlightened.",key));
+
 
             }
 
@@ -246,7 +239,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onGeoQueryReady() {
 
-                Log.e("ERROR","");
+
             }
 
             @Override
