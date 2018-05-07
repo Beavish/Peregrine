@@ -23,7 +23,7 @@
             <com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:id="@+id/VerticalSeekBar"
+                android:id="@+id/verticalSeekBar"
                 android:progress="12"
                 android:max="15"
                 android:splitTrack="false"
@@ -32,8 +32,19 @@
 
         </com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBarWrapper>
 
-    </RelativeLayout>
 
+
+    </RelativeLayout>
+    <Button
+        android:id="@+id/btnCamera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|top"
+        android:layout_marginTop="20dp"
+        android:padding="10dp"
+        android:paddingRight="10dp"
+        android:text="Camera Button"
+        android:visibility="visible" />
 
 
 

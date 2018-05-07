@@ -1,7 +1,6 @@
 package com.example.elitebook.location;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -9,30 +8,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.icu.text.IDNA;
 import android.location.Location;
-import com.google.android.gms.location.LocationListener;
-import android.nfc.Tag;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.Toast;
-
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
 import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApi;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -41,12 +34,10 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.messaging.RemoteMessage;
-
+import com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar;
 import java.util.Random;
 
 
@@ -57,6 +48,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private static final int MY_PERMISSION_REQUEST_CODE = 1234;
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 1234567;
+    private Button btnCamera;
 
     private LocationRequest mLocationRequest;
     private GoogleApiClient mGoogleApiClient;
@@ -70,6 +62,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final String TAG = "GoogleApiClient";
     DatabaseReference ref;
     GeoFire geoFire;
+    VerticalSeekBar mSeekBar;
 
 
     @Override
@@ -85,9 +78,42 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         geoFire = new GeoFire(ref);
         mNotificationHelper = new NotificationHelper(this);
 
+        mSeekBar = (VerticalSeekBar)findViewById(R.id.verticalSeekBar);
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+
+                                                @Override
+                                                public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                                                    mMap.animateCamera(CameraUpdateFactory.zoomTo(i),2000,null);
+                                                }
+
+                                                @Override
+                                                public void onStartTrackingTouch(SeekBar seekBar) {
+
+                                                }
+
+                                                @Override
+                                                public void onStopTrackingTouch(SeekBar seekBar) {
+
+                                                }
+                                            });
+
+        btnCamera =(Button)findViewById(R.id.btnCamera);
+        btnCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openCamera();
+            }
+        });
+
+
 
         setUpLocation();
         Log.d(TAG,"SetUpLocation called");
+    }
+
+    private void openCamera() {
+        Intent intent = new Intent(this,CameraActivity.class);
+        startActivity(intent);
     }
 
     @Override
@@ -323,6 +349,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
+
+
+
+
 
 
 }
