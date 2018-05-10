@@ -1,6 +1,7 @@
 package com.example.elitebook.location;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -148,6 +149,7 @@ public class CameraActivity extends AppCompatActivity {
             ImageReader.OnImageAvailableListener readerListener = new ImageReader.OnImageAvailableListener() {
                 @Override
                 public void onImageAvailable(ImageReader reader) {
+
                     Image image = null;
                     try {
                         image = reader.acquireLatestImage();
@@ -155,6 +157,7 @@ public class CameraActivity extends AppCompatActivity {
                         byte[] bytes = new byte[buffer.capacity()];
                         buffer.get(bytes);
                         save(bytes);
+                        sendImage(bytes);
                     } catch (FileNotFoundException e)
                     {
                         e.printStackTrace();
@@ -350,5 +353,12 @@ public class CameraActivity extends AppCompatActivity {
         mBackgroundThread.start();
         mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
 
+    }
+
+    private void sendImage(byte[] bytes){
+      Intent intent = new Intent(this,showImageActivity.class);
+      intent.putExtra("capture",bytes);
+        startActivity(intent);
+        return;
     }
 }
