@@ -38,6 +38,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar;
+
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Random;
 
 
@@ -60,6 +64,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final String message = "Look out for the G.P.O";
     private NotificationHelper mNotificationHelper;
     private static final String TAG = "GoogleApiClient";
+    public static ArrayList <String> fLocation = new ArrayList <>();
+    private final String PO = "GPO";
+
     DatabaseReference ref;
     GeoFire geoFire;
     VerticalSeekBar mSeekBar;
@@ -228,7 +235,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         mMap.setMyLocationEnabled(true);
 
-        LatLng GPO = new LatLng(53.349472,-6.2605703);
+        final LatLng GPO = new LatLng(53.349472,-6.2605703);
         mMap.addCircle(new CircleOptions()
                 .center(GPO)
                 .radius(5.0)
@@ -245,20 +252,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Notification.Builder builder = mNotificationHelper.getChannel1Notification(title,message);
                 mNotificationHelper.getmManger().notify(new Random().nextInt(),builder.build());
 
-
-
+                fLocation.add(PO);
 
             }
 
             @Override
             public void onKeyExited(String key ) {
-
+                    fLocation.remove(PO);
 
             }
 
             @Override
             public void onKeyMoved(String key, GeoLocation location) {
                 Log.d(TAG,"resting in the GPO area");
+
 
             }
 
@@ -349,7 +356,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
-
 
 
 
