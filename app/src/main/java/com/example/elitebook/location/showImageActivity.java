@@ -70,7 +70,11 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                savePhoto();
+                try {
+                    savePhoto();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
         });
@@ -119,13 +123,14 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
             mGalleryFolder.mkdirs();
         }
     }
-    File createImage() throws IOException {
+    File createImage(Bitmap combo) throws IOException {
 
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "IMAGE_" + timeStamp + "_";
 
         File mImage = File.createTempFile(imageFileName, ".jpg", mGalleryFolder);
         mImageLocation = mImage.getAbsolutePath();
+        Toast.makeText(this, "FILE SAVED TO PEREGRINE GALLERY", Toast.LENGTH_LONG).show();
         return mImage;
     }
 
@@ -244,7 +249,7 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
     public void onClick(View v) {
 
     }
-    private void savePhoto() {
+    private void savePhoto() throws IOException {
         BitmapDrawable drawable = (BitmapDrawable) mImageView.getDrawable();
         Bitmap bitmap = drawable.getBitmap();
         int w = bitmap.getWidth();
@@ -255,7 +260,8 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
         Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.kieran);
         canvas.drawBitmap(bitmap,0f,0f,null);
         canvas.drawBitmap(bm,10,10,null);
-        Toast.makeText(this,"Save function is working",Toast.LENGTH_LONG).show();
+
+        createImage(combo);
     }
 }
 
