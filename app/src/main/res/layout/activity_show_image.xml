@@ -6,17 +6,43 @@
     android:layout_height="match_parent"
     tools:context=".showImageActivity">
 
+
+
+
     <ImageView
+        android:id="@+id/showImageView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitXY"
-        android:id="@+id/showImageView"/>
+        android:scaleType="fitXY" />
+
     <ImageView
-        android:scaleType="fitCenter"
-        android:layout_height="90dp"
-        android:layout_width="90dp"
-        android:layout_gravity="bottom"
         android:id="@+id/filter"
-        />
+        android:layout_width="90dp"
+        android:layout_height="88dp"
+        android:layout_gravity="bottom"
+        android:contentDescription="@string/todo"
+        android:scaleType="fitXY" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Button
+                android:id="@+id/saveButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="118dp"
+                android:text="Save" />
+
+            <Button
+                android:id="@+id/cancelButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_toEndOf="@+id/saveButton"
+                android:text="Cancel" />
+        </RelativeLayout>
+
 
 </FrameLayout>
