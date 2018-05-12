@@ -2,9 +2,6 @@ package com.example.elitebook.location;
 
 import android.Manifest;
 import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -39,8 +36,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar;
 
-import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -60,12 +55,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static int UPDATE_INTERVAL = 5000;
     private static int FASTEST_INTERVAL = 3000;
     private static int DISPLACEMENT = 10;
-    private static final String title = "Peregrine";
-    private static final String message = "Look out for the G.P.O";
+    private static final String title = "Alert!";
+    private static final String message = "You have just entered an area of Historial Significance";
     private NotificationHelper mNotificationHelper;
-    private static final String TAG = "GoogleApiClient";
-    public static ArrayList <String> fLocation = new ArrayList <>();
+    private static final String TAG = "KIERAN";
+    public static ArrayList <String> fLocation = new ArrayList <String>();
     private final String PO = "GPO";
+    private final String NC = "NCI";
+    private final ArrayList<GeoQuery> queries = new ArrayList <>();
+
 
     DatabaseReference ref;
     GeoFire geoFire;
@@ -81,6 +79,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+
         ref = FirebaseDatabase.getInstance().getReference("MyLocation");
         geoFire = new GeoFire(ref);
         mNotificationHelper = new NotificationHelper(this);
@@ -90,7 +89,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                                 @Override
                                                 public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                                                    mMap.animateCamera(CameraUpdateFactory.zoomTo(i),2000,null);
+                                         //           mMap.animateCamera(CameraUpdateFactory.zoomTo(i),2000,null);
                                                 }
 
                                                 @Override
@@ -234,80 +233,118 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
         mMap.setMyLocationEnabled(true);
+    //   mMap.animateCamera(CameraUpdateFactory.newLatLng(mLastLocation));
 
-        final LatLng GPO = new LatLng(53.349472,-6.2605703);
-        mMap.addCircle(new CircleOptions()
-                .center(GPO)
-                .radius(5.0)
-                .strokeColor(Color.BLUE)
-                .fillColor(0x22000FF)
-                .strokeWidth(5.0f)
-        );
 
-        GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(GPO.latitude,GPO.longitude),10f);
+           // GROFENCE1
+            final LatLng GPO = new LatLng(53.349472,-6.2605703);
+            mMap.addCircle(new CircleOptions()
+                    .center(GPO)
+                    .radius(0.05)
+                    .strokeColor(Color.BLUE)
+                    .fillColor(0x22000FF)
+                    .strokeWidth(5.0f)
+            );
+            //GEOFENCE 2
+        final LatLng NCI = new LatLng(53.348984,-6.2432225);
+                mMap.addCircle(new CircleOptions()
+                        .center(NCI)
+                        .radius(0.05)
+                        .strokeColor(Color.BLUE)
+                        .fillColor(0x22000FF)
+                        .strokeWidth(5.0f)
+                );
+        final GeoQuery geoQuery = geoFire.queryAtLocation(new GeoLocation(GPO.latitude,GPO.longitude),0.05f);
+        final GeoQuery geoQuery1 = geoFire.queryAtLocation(new GeoLocation(NCI.latitude,NCI.longitude),0.05f);
+        queries.add(geoQuery);
+        queries.add(geoQuery1);
+                        // NCI QUERY
+                    geoQuery1.addGeoQueryEventListener(new GeoQueryEventListener() {
+                        @Override
+                        public void onKeyEntered(String key, GeoLocation location) {
+                            Notification.Builder builder = mNotificationHelper.getChannel1Notification(title, message);
+                            mNotificationHelper.getmManger().notify(new Random().nextInt(), builder.build());
+                            fLocation.clear();
+                            fLocation.add(NC);
+                            Log.d(TAG,"you're at NCI"+fLocation);
+
+
+                        }
+
+
+                        @Override
+                        public void onKeyExited(String key) {
+                            fLocation.clear();
+
+                        }
+
+                        @Override
+                        public void onKeyMoved(String key, GeoLocation location) {
+                            Log.d(TAG, "resting in the GPO area");
+
+
+                        }
+
+                        @Override
+                        public void onGeoQueryReady() {
+
+
+                        }
+
+                        @Override
+                        public void onGeoQueryError(DatabaseError error) {
+                            Log.e("ERROR", "" + error);
+
+                        }
+                    });
+                    // query 2
+        //
+        //
+        //
         geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
-            @Override
-            public void onKeyEntered(String key, GeoLocation location) {
+                @Override
+                public void onKeyEntered(String key, GeoLocation location) {
 
-                Notification.Builder builder = mNotificationHelper.getChannel1Notification(title,message);
-                mNotificationHelper.getmManger().notify(new Random().nextInt(),builder.build());
-
-                fLocation.add(PO);
-
-            }
-
-            @Override
-            public void onKeyExited(String key ) {
-                    fLocation.remove(PO);
-
-            }
-
-            @Override
-            public void onKeyMoved(String key, GeoLocation location) {
-                Log.d(TAG,"resting in the GPO area");
-
-
-            }
-
-            @Override
-            public void onGeoQueryReady() {
-
-
-            }
-
-            @Override
-            public void onGeoQueryError(DatabaseError error) {
-                Log.e("ERROR",""+ error);
-
-            }
-        });
+                    Notification.Builder builder = mNotificationHelper.getChannel1Notification(title, message);
+                    mNotificationHelper.getmManger().notify(new Random().nextInt(), builder.build());
+                    fLocation.clear();
+                    fLocation.add(PO);
+                    Log.d(TAG,"you're at the gpo"+fLocation);
 
 
 
-    }
+
+                }
+
+
+                @Override
+                public void onKeyExited(String key) {
 
 
 
-    private void sendNotification(String title, String content) {
-        Notification.Builder builder = new Notification.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle(title)
-                .setContentText(content);
-        NotificationManager manager = (NotificationManager)this.getSystemService(Context.NOTIFICATION_SERVICE);
-        Intent intent = new Intent(this,MapsActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_IMMUTABLE);
-        builder.setContentIntent(contentIntent);
-        Notification notification = builder.build();
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
-        notification.defaults |= Notification.DEFAULT_SOUND;
+                }
 
-        manager.notify(new Random().nextInt(), notification);
+                @Override
+                public void onKeyMoved(String key, GeoLocation location) {
 
+                }
 
+                @Override
+                public void onGeoQueryReady() {
+
+                }
+
+                @Override
+                public void onGeoQueryError(DatabaseError error) {
+
+                }
+            });
+
+Log.d(TAG,"onMapReady"+fLocation);
 
     }
 
-    @Override
+  @Override
     public void onLocationChanged(Location location) {
         mLastLocation = location;
         displayLocation();

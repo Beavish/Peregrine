@@ -7,16 +7,15 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.VectorDrawable;
 import android.os.Environment;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -27,14 +26,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import static android.graphics.drawable.VectorDrawable.*;
+import static com.example.elitebook.location.MapsActivity.fLocation;
 
 
 public class showImageActivity extends AppCompatActivity  implements GestureDetector.OnGestureListener,View.OnClickListener{
 
 
-    private ArrayList <String> fLocation = MapsActivity.fLocation;
-    private final String PO = "GPO";
+    public static ArrayList <String> mLocation = fLocation;
     private GestureDetectorCompat gestureDetector;
     private static final int SWIPE_MIN_DISTANCE = 120;
     private static final int SWIPE_MAX_OFF_PATH = 250;
@@ -46,19 +44,17 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
     private String mImageLocation;
     private String GALLERY_LOCATION = "Peregrine Gallery";
     private File mGalleryFolder;
-
-
-    public showImageActivity() throws IOException {
-
-    }
-
+    private String TAG = "KIERAN";
+    private String MY_PREFS_NAME= "KIERAN";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_image);
           String mImageLocation = "";
+        Log.d(TAG,"ONCREATE METHOD"+mLocation);
 
+        Log.d(TAG,"ONCREATE METHOD"+mLocation);
         createGallery();
 
 
@@ -99,7 +95,7 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
             Bitmap decodedBitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
             Bitmap rotateBitmap = rotate(decodedBitmap);
             mImageView.setImageBitmap(rotateBitmap);
-            Toast.makeText(showImageActivity.this,"Geo Filter for "+fLocation,Toast.LENGTH_LONG).show();
+            Toast.makeText(showImageActivity.this,"Swipe Left for a Filter",Toast.LENGTH_LONG).show();
         }
 
 
@@ -123,7 +119,7 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
             mGalleryFolder.mkdirs();
         }
     }
-    File createImage(Bitmap combo) throws IOException {
+    File createImage(Canvas canvas) throws IOException {
 
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "IMAGE_" + timeStamp + "_";
@@ -185,7 +181,7 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
 
     @Override
     public void onLongPress(MotionEvent e) {
-        Toast.makeText(this, "SWIPED", Toast.LENGTH_LONG).show();
+
     }
 
     @Override
@@ -198,13 +194,12 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
             if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE
                     && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                 onLeftSwipe();
-             //   Toast.makeText(this, "SWIPED", Toast.LENGTH_LONG).show();
+
 
             }
             // left to right swipe
             else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE
                     && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-             //   Toast.makeText(this, "SWIPED", Toast.LENGTH_LONG).show();
                 onRightSwipe();
 
             }
@@ -216,13 +211,20 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
     }
 // add filter based on string element
     private boolean onLeftSwipe() {
-        for (String element : fLocation) {
-            if (element.equalsIgnoreCase("GPO")) {
+        if (mLocation.contains("GPO"))
+             {
                 ImageView filter = findViewById(R.id.filter);
                 filter.setImageResource(R.drawable.kieran);
-                Toast.makeText(this, "SWIPED LEFT", Toast.LENGTH_LONG).show();
+                Log.d(TAG,"ArrayList contents"+mLocation);
             }
-        }
+
+                    else if(mLocation.contains("NCI")) {
+                ImageView filter = findViewById(R.id.filter);
+                filter.setImageResource(R.drawable.nci);
+                Log.d(TAG,"ArrayList contents something weird is going on"+mLocation);
+
+            }
+
         return true;
         }
 
@@ -231,7 +233,6 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
 
                 ImageView filter = findViewById(R.id.filter);
                 filter.setImageDrawable(null);
-                Toast.makeText(this, "SWIPED RIGHT", Toast.LENGTH_LONG).show();
 
         return true;
         }
@@ -261,7 +262,10 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
         canvas.drawBitmap(bitmap,0f,0f,null);
         canvas.drawBitmap(bm,10,10,null);
 
-        createImage(combo);
+        createImage(canvas);
+        mLocation.clear();
+        Log.d(TAG,"Last line of code"+mLocation);
     }
+
 }
 
