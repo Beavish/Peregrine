@@ -20,7 +20,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -67,6 +69,7 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
             @Override
             public void onClick(View v) {
                 try {
+
                     savePhoto();
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -98,36 +101,34 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
             Toast.makeText(showImageActivity.this,"Swipe Left for a Filter",Toast.LENGTH_LONG).show();
         }
 
-
-/*
-        private Bitmap joinImages(Bitmap image, Bitmap filter){
-            // Bitmap result = Bitmap.createBitmap(firstImage.getWidth(),firstImage.getHeight(),firstImage.getConfig());
-            combo = Bitmap.createBitmap(firstImage.getWidth(),firstImage.getHeight(),firstImage.getConfig());
-            Canvas canvas = new Canvas(combo);
-            canvas.drawBitmap(firstImage,0f,0f,null);
-            canvas.drawBitmap(secondImage,10,10,null);
-            return combo;
-        }
-            */
     }
 
-
+        //creating a gallery
     private void createGallery() {
         File storageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         mGalleryFolder = new File(storageDirectory,GALLERY_LOCATION);
         if(!mGalleryFolder.exists()){
             mGalleryFolder.mkdirs();
-        }
-    }
-    File createImage(Canvas canvas) throws IOException {
 
+        }
+    } // create a file where both bitmaps are merged together
+    File createImage(Bitmap combo) throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "IMAGE_" + timeStamp + "_";
+        File image = File.createTempFile(imageFileName, ".jpg", mGalleryFolder);
+        image.createNewFile();
 
-        File mImage = File.createTempFile(imageFileName, ".jpg", mGalleryFolder);
-        mImageLocation = mImage.getAbsolutePath();
+        Bitmap bitmap = combo;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+        byte[] bitmapdata = bos.toByteArray();
+        FileOutputStream fos = new FileOutputStream(image);
+        fos.write(bitmapdata);
+        fos.flush();
+        fos.close();
+        mImageLocation = image.getAbsolutePath();
         Toast.makeText(this, "FILE SAVED TO PEREGRINE GALLERY", Toast.LENGTH_LONG).show();
-        return mImage;
+        return image;
     }
 
 
@@ -141,7 +142,7 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
 
 
 
-
+        // align the captured image to the correct angle
     private Bitmap rotate(Bitmap decodedBitmap) {
         int w = decodedBitmap.getWidth();
         int h = decodedBitmap.getHeight();
@@ -214,7 +215,7 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
         if (mLocation.contains("GPO"))
              {
                 ImageView filter = findViewById(R.id.filter);
-                filter.setImageResource(R.drawable.kieran);
+                filter.setImageResource(R.drawable.Kieran);
                 Log.d(TAG,"ArrayList contents"+mLocation);
             }
 
@@ -250,21 +251,27 @@ public class showImageActivity extends AppCompatActivity  implements GestureDete
     public void onClick(View v) {
 
     }
-    private void savePhoto() throws IOException {
+    private Bitmap savePhoto() throws IOException {
         BitmapDrawable drawable = (BitmapDrawable) mImageView.getDrawable();
         Bitmap bitmap = drawable.getBitmap();
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();
         Bitmap.Config c = bitmap.getConfig();
         Bitmap combo = Bitmap.createBitmap(w,h,c);
+        BitmapDrawable bitmap1 = (BitmapDrawable)filter.getDrawable();
+        Bitmap bitmap2 = bitmap1.getBitmap();
+        int x = bitmap2.getHeight();
+        int y = bitmap2.getWidth();
+        Bitmap.Config d = bitmap2.getConfig();
+        Bitmap combo1 = Bitmap.createBitmap(y,x,d);
         Canvas canvas = new Canvas(combo);
-        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.drawable.kieran);
-        canvas.drawBitmap(bitmap,0f,0f,null);
-        canvas.drawBitmap(bm,10,10,null);
+        canvas.drawBitmap(combo,0f,0f,null);
+        canvas.drawBitmap(combo1,10,10,null);
 
-        createImage(canvas);
+        createImage(combo);
         mLocation.clear();
         Log.d(TAG,"Last line of code"+mLocation);
+        return combo;
     }
 
 }
